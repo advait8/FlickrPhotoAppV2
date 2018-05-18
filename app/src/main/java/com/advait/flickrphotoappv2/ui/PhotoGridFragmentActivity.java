@@ -1,20 +1,12 @@
 package com.advait.flickrphotoappv2.ui;
 
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +14,7 @@ import android.view.MenuItem;
 import com.advait.flickrphotoappv2.R;
 import com.advait.flickrphotoappv2.model.Photo;
 import com.advait.flickrphotoappv2.ui.adapter.ImageAdapter;
-import com.advait.flickrphotoappv2.util.FlickrApiConstants;
+import com.advait.flickrphotoappv2.util.FlickrApiUtils;
 import com.advait.flickrphotoappv2.util.VolleyRequestQueue;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -34,13 +26,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class PhotoGridFragmentActivity extends AppCompatActivity {
 
     public static final String LIST_OF_PHOTOS = "LIST_OF_PHOTOS";
     private SearchView searchView;
-
     private RecyclerView recyclerView;
     private ImageAdapter imageAdapter;
     private ArrayList<Photo> photoList;
@@ -51,17 +41,22 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_photo_grid_fragment);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             photoList = savedInstanceState.getParcelableArrayList(LIST_OF_PHOTOS);
         } else {
             photoList = new ArrayList<>();
         }
+
+        setupRecyclerView();
+
+    }
+
+    private void setupRecyclerView() {
         imageAdapter = new ImageAdapter(photoList, this);
         recyclerView = findViewById(R.id.photoView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(imageAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-
     }
 
     @Override
@@ -78,7 +73,7 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
                 }
                 myActionMenuItem.collapseActionView();
 
-                String URL = getSearchPhotoinFlickrUrl(query);
+                String URL = FlickrApiUtils.getSearchPhotoinFlickrUrl(query, PhotoGridFragmentActivity.this);
                 StringRequest flickrPhotoSearchRequest = new StringRequest(Request.Method.GET, URL,
                         new Response.Listener<String>() {
                             @Override
@@ -104,21 +99,10 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
         return true;
     }
 
-    @NonNull
-    private String getSearchPhotoinFlickrUrl(String query) {
-        return FlickrApiConstants.FLICKR_API_URL
-                + FlickrApiConstants.SEARCH_PHOTO_API_METHOD
-                + FlickrApiConstants.API_KEY
-                + getString(R.string.flickr_api_key)
-                + FlickrApiConstants.QUERY_STRING + query
-                + FlickrApiConstants.API_RESPONSE_FORMAT;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
             return true;
         }
@@ -157,7 +141,7 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(LIST_OF_PHOTOS,photoList);
+        outState.putParcelableArrayList(LIST_OF_PHOTOS, photoList);
         super.onSaveInstanceState(outState);
     }
 }
