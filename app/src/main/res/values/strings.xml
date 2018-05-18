@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MyFlickr Photo App</string>
+    <string name="action_settings">Settings</string>
+    <string name="flickr_api_key">675894853ae8ec6c242fa4c077bcf4a0</string>
+</resources>
