@@ -1,16 +1,20 @@
 package com.advait.flickrphotoappv2.ui;
 
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,10 +38,12 @@ import java.util.List;
 
 public class PhotoGridFragmentActivity extends AppCompatActivity {
 
+    public static final String LIST_OF_PHOTOS = "LIST_OF_PHOTOS";
     private SearchView searchView;
 
     private RecyclerView recyclerView;
     private ImageAdapter imageAdapter;
+    private ArrayList<Photo> photoList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +51,16 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_photo_grid_fragment);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        imageAdapter = new ImageAdapter(null,this);
+        if(savedInstanceState != null) {
+            photoList = savedInstanceState.getParcelableArrayList(LIST_OF_PHOTOS);
+        } else {
+            photoList = new ArrayList<>();
+        }
+        imageAdapter = new ImageAdapter(photoList, this);
         recyclerView = findViewById(R.id.photoView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(imageAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
     }
 
@@ -118,7 +129,6 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
 
     private void parseSuccessResponse(String response) {
         try {
-            List<Photo> photoList = new ArrayList<>();
             JSONObject jsonObject = new JSONObject(response);
             JSONArray photoJsonArray = jsonObject.optJSONObject("photos").optJSONArray("photo");
             if (photoJsonArray != null) {
@@ -137,10 +147,17 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
             if (photoList.size() > 0) {
                 imageAdapter = new ImageAdapter(photoList, this);
                 recyclerView.setAdapter(imageAdapter);
+                recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
                 recyclerView.setVisibility(View.VISIBLE);
             }
         } catch (JSONException je) {
             Log.e("FlickrPhotoApp", "Error parsing success response");
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(LIST_OF_PHOTOS,photoList);
+        super.onSaveInstanceState(outState);
     }
 }
