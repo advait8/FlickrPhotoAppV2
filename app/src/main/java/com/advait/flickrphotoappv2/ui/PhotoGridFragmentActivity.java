@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.advait.flickrphotoappv2.R;
 import com.advait.flickrphotoappv2.model.Photo;
@@ -32,6 +34,7 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
     public static final String LIST_OF_PHOTOS = "LIST_OF_PHOTOS";
     private SearchView searchView;
     private RecyclerView recyclerView;
+    private ProgressBar progressBar;
     private ImageAdapter imageAdapter;
     private ArrayList<Photo> photoList;
 
@@ -46,7 +49,7 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
         } else {
             photoList = new ArrayList<>();
         }
-
+        progressBar = findViewById(R.id.progressBar);
         setupRecyclerView();
 
     }
@@ -78,16 +81,21 @@ public class PhotoGridFragmentActivity extends AppCompatActivity {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
+                                photoList.clear();
+                                progressBar.setVisibility(View.GONE);
                                 parseSuccessResponse(response);
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(PhotoGridFragmentActivity.this, R.string.error_string, Toast.LENGTH_SHORT).show();
                         //TODO handle error scenario in case of any type of failure
                     }
                 });
 
                 VolleyRequestQueue.getInstance(PhotoGridFragmentActivity.this).addToRequestQueue(flickrPhotoSearchRequest);
+                progressBar.setVisibility(View.VISIBLE);
                 return true;
             }
 
